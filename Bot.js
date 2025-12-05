@@ -804,6 +804,12 @@ client.on('interactionCreate', async interaction => {
 // 啟動
 const TOKEN = process.env.DISCORD_BOT_TOKEN;
 
+console.log('🔍 檢查環境變數...');
+console.log('DISCORD_BOT_TOKEN:', TOKEN ? '✅ 已設定' : '❌ 未設定');
+console.log('GOOGLE_SHEETS_ID:', SPREADSHEET_ID ? '✅ 已設定' : '❌ 未設定');
+console.log('GOOGLE_SERVICE_ACCOUNT_EMAIL:', process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL ? '✅ 已設定' : '❌ 未設定');
+console.log('GOOGLE_PRIVATE_KEY:', process.env.GOOGLE_PRIVATE_KEY ? '✅ 已設定' : '❌ 未設定');
+
 if (!TOKEN) {
     console.log('❌ 請設定環境變數 DISCORD_BOT_TOKEN');
     process.exit(1);
@@ -814,4 +820,7 @@ if (!SPREADSHEET_ID) {
     process.exit(1);
 }
 
-client.login(TOKEN);
+console.log('🚀 正在連接 Discord...');
+client.login(TOKEN).catch(err => {
+    console.error('❌ Discord 登入失敗:', err.message);
+});
