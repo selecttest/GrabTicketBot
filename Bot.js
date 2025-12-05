@@ -842,8 +842,35 @@ client.on('debug', info => {
     }
 });
 
+// Shard 狀態監聽 (更底層的連線狀態)
+client.on('shardError', error => {
+    console.error('❌ Shard 發生錯誤:', error);
+});
+
+client.on('shardReady', id => {
+    console.log(`✅ Shard ${id} 已準備就緒`);
+});
+
+client.on('shardDisconnect', (event, id) => {
+    console.warn(`⚠️ Shard ${id} 已斷線`, event);
+});
+
+client.on('shardReconnecting', id => {
+    console.log(`🔄 Shard ${id} 正在重新連接...`);
+});
+
 // 登入 Discord
 console.log('🚀 正在連接 Discord...');
-client.login(TOKEN).catch(err => {
+
+// 連線超時檢查
+setTimeout(() => {
+    if (!client.isReady()) {
+        console.error('⚠️ 連線超時 (30秒)，Bot 尚未準備就緒。請檢查 Token 是否正確或過期。');
+    }
+}, 30000);
+
+client.login(TOKEN).then(() => {
+    console.log('✅ client.login() Promise resolved');
+}).catch(err => {
     console.error('❌ 登入失敗 (client.login 報錯):', err);
 });
