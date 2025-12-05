@@ -270,11 +270,7 @@ async function getAllUserStats() {
 // ===== Discord Bot =====
 
 const client = new Client({
-    intents: [
-        GatewayIntentBits.Guilds,
-        GatewayIntentBits.GuildMessages,
-        GatewayIntentBits.MessageContent
-    ]
+    intents: [GatewayIntentBits.Guilds]
 });
 
 // 註冊斜線指令
