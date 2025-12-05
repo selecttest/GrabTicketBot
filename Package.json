@@ -1,0 +1,16 @@
+{
+  "name": "ticket-tracker-bot",
+  "version": "1.0.0",
+  "description": "Discord 搶票記錄機器人",
+  "main": "Bot.js",
+  "scripts": {
+    "start": "node Bot.js"
+  },
+  "dependencies": {
+    "discord.js": "^14.14.1",
+    "googleapis": "^129.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
