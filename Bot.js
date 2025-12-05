@@ -270,7 +270,12 @@ async function getAllUserStats() {
 // ===== Discord Bot =====
 
 const client = new Client({
-    intents: [GatewayIntentBits.Guilds]
+    intents: [
+        GatewayIntentBits.Guilds,
+        GatewayIntentBits.GuildMessages,
+        GatewayIntentBits.MessageContent, // 需要在 Discord Developer Portal 開啟 Message Content Intent
+        GatewayIntentBits.GuildMembers    // 需要在 Discord Developer Portal 開啟 Server Members Intent
+    ]
 });
 
 // 註冊斜線指令
@@ -861,6 +866,12 @@ client.on('shardReconnecting', id => {
 
 // 登入 Discord
 console.log('🚀 正在連接 Discord...');
+
+// 網路連通性測試
+fetch('https://discord.com/api/v10/gateway')
+    .then(res => res.json())
+    .then(data => console.log('🌐 Discord Gateway 測試:', data.url ? '✅ 連線正常' : '⚠️ 回傳異常', data))
+    .catch(err => console.error('❌ 無法連接 Discord API:', err.message));
 
 // 連線超時檢查
 setTimeout(() => {
