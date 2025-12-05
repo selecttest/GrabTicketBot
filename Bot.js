@@ -820,7 +820,21 @@ if (!SPREADSHEET_ID) {
     process.exit(1);
 }
 
-console.log('🚀 正在連接 Discord...');
-client.login(TOKEN).catch(err => {
-    console.error('❌ Discord 登入失敗:', err.message);
+// 監聽錯誤事件
+client.on('error', err => {
+    console.error('❌ Discord 錯誤:', err);
 });
+
+client.on('warn', warn => {
+    console.warn('⚠️ Discord 警告:', warn);
+});
+
+console.log('🚀 正在連接 Discord...');
+client.login(TOKEN)
+    .then(() => {
+        console.log('✅ Discord login() 成功');
+    })
+    .catch(err => {
+        console.error('❌ Discord 登入失敗:', err.message);
+        console.error('完整錯誤:', err);
+    });
