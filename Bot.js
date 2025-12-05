@@ -868,9 +868,22 @@ client.on('shardReconnecting', id => {
 console.log('🚀 正在連接 Discord...');
 
 // 網路連通性測試
-fetch('https://discord.com/api/v10/gateway')
-    .then(res => res.json())
-    .then(data => console.log('🌐 Discord Gateway 測試:', data.url ? '✅ 連線正常' : '⚠️ 回傳異常', data))
+fetch('https://discord.com/api/v10/gateway', {
+    headers: {
+        'User-Agent': 'DiscordBot (https://github.com/discordjs/discord.js, 14.18.0)'
+    }
+})
+    .then(async res => {
+        const text = await res.text();
+        try {
+            const data = JSON.parse(text);
+            console.log('🌐 Discord Gateway 測試:', data.url ? '✅ 連線正常' : '⚠️ 回傳異常', data);
+        } catch (e) {
+            console.error('❌ Discord API 回傳非 JSON 格式 (可能被 Cloudflare 擋住):');
+            console.error('狀態碼:', res.status, res.statusText);
+            console.error('回傳內容 (前 500 字):', text.slice(0, 500));
+        }
+    })
     .catch(err => console.error('❌ 無法連接 Discord API:', err.message));
 
 // 連線超時檢查
