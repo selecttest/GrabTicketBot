@@ -1,26 +1,42 @@
+require('dotenv').config();
 const { Client, GatewayIntentBits, SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, PermissionFlagsBits, AttachmentBuilder } = require('discord.js');
 const { google } = require('googleapis');
 const fs = require('fs');
 const path = require('path');
-const http = require('http');
+const express = require('express');
 
-// ===== 簡易 HTTP 服務器（給 Render 健康檢查用）=====
-const PORT = process.env.PORT || 3000;
-http.createServer((req, res) => {
-    res.writeHead(200, { 'Content-Type': 'text/plain' });
-    res.end('GrabTicketBot is running!');
-}).listen(PORT, () => {
-    console.log(`✅ HTTP 服務器運行於 port ${PORT}`);
+// ===== 環境變數 =====
+const TOKEN = process.env.DISCORD_BOT_TOKEN;
+const SPREADSHEET_ID = process.env.GOOGLE_SHEETS_ID;
+const SHEET_NAME = '記錄';
+const PORT = process.env.PORT || 10000;
+const SELF_URL = process.env.SELF_URL || 'https://grabticketbot.onrender.com';
+
+// ===== Express 伺服器 =====
+const app = express();
+app.get('/', (req, res) => res.send('GrabTicketBot is running!'));
+app.listen(PORT, () => console.log(`🌐 伺服器已啟動，運行於連接埠: ${PORT}`));
+
+// ===== Self Ping（防止 Render 休眠）=====
+const pingInterval = 5 * 60 * 1000; // 5 分鐘
+const keepAlive = async () => {
+    try {
+        const response = await fetch(SELF_URL);
+        console.log(`🔁 成功 Ping 自己的網址 ${SELF_URL}`);
+    } catch (err) {
+        console.error('⚠️ 自動 Ping 失敗:', err.message);
+    }
+};
+setInterval(keepAlive, pingInterval);
+
+// ===== 全域錯誤處理 =====
+process.on('unhandledRejection', err => {
+    console.error('❌ 未處理的 Promise 拒絕:', err);
 });
 
-// ===== Google Sheets 設定 =====
-// 請在 Render 環境變數中設定以下值：
-// GOOGLE_SHEETS_ID - 你的 Google Sheets ID
-// GOOGLE_SERVICE_ACCOUNT_EMAIL - 服務帳號 Email
-// GOOGLE_PRIVATE_KEY - 服務帳號私鑰（JSON 中的 private_key）
-
-const SPREADSHEET_ID = process.env.GOOGLE_SHEETS_ID;
-const SHEET_NAME = '記錄'; // 工作表名稱
+process.on('uncaughtException', err => {
+    console.error('❌ 未捕獲的例外:', err);
+});
 
 // Google Sheets 認證
 let sheets;
@@ -801,9 +817,7 @@ client.on('interactionCreate', async interaction => {
     }
 });
 
-// 啟動
-const TOKEN = process.env.DISCORD_BOT_TOKEN;
-
+// ===== 啟動 =====
 console.log('🔍 檢查環境變數...');
 console.log('DISCORD_BOT_TOKEN:', TOKEN ? '✅ 已設定' : '❌ 未設定');
 console.log('GOOGLE_SHEETS_ID:', SPREADSHEET_ID ? '✅ 已設定' : '❌ 未設定');
@@ -811,12 +825,7 @@ console.log('GOOGLE_SERVICE_ACCOUNT_EMAIL:', process.env.GOOGLE_SERVICE_ACCOUNT_
 console.log('GOOGLE_PRIVATE_KEY:', process.env.GOOGLE_PRIVATE_KEY ? '✅ 已設定' : '❌ 未設定');
 
 if (!TOKEN) {
-    console.log('❌ 請設定環境變數 DISCORD_BOT_TOKEN');
-    process.exit(1);
-}
-
-if (!SPREADSHEET_ID) {
-    console.log('❌ 請設定環境變數 GOOGLE_SHEETS_ID');
+    console.error('❌ 請設定環境變數 DISCORD_BOT_TOKEN');
     process.exit(1);
 }
 
@@ -829,12 +838,6 @@ client.on('warn', warn => {
     console.warn('⚠️ Discord 警告:', warn);
 });
 
+// 登入 Discord
 console.log('🚀 正在連接 Discord...');
-client.login(TOKEN)
-    .then(() => {
-        console.log('✅ Discord login() 成功');
-    })
-    .catch(err => {
-        console.error('❌ Discord 登入失敗:', err.message);
-        console.error('完整錯誤:', err);
-    });
+client.login(TOKEN);
