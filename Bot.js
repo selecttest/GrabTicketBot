@@ -2,6 +2,16 @@ const { Client, GatewayIntentBits, SlashCommandBuilder, EmbedBuilder, ActionRowB
 const { google } = require('googleapis');
 const fs = require('fs');
 const path = require('path');
+const http = require('http');
+
+// ===== 簡易 HTTP 服務器（給 Render 健康檢查用）=====
+const PORT = process.env.PORT || 3000;
+http.createServer((req, res) => {
+    res.writeHead(200, { 'Content-Type': 'text/plain' });
+    res.end('GrabTicketBot is running!');
+}).listen(PORT, () => {
+    console.log(`✅ HTTP 服務器運行於 port ${PORT}`);
+});
 
 // ===== Google Sheets 設定 =====
 // 請在 Render 環境變數中設定以下值：
