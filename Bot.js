@@ -834,6 +834,16 @@ client.on('warn', warn => {
     console.warn('⚠️ Discord 警告:', warn);
 });
 
+// 增加 Debug 訊息以便排查問題
+client.on('debug', info => {
+    // 過濾掉一些太頻繁的心跳訊息，保留關鍵連線訊息
+    if (!info.includes('Heartbeat') && !info.includes('heartbeat')) {
+        console.log('🔧 Discord Debug:', info);
+    }
+});
+
 // 登入 Discord
 console.log('🚀 正在連接 Discord...');
-client.login(TOKEN);
+client.login(TOKEN).catch(err => {
+    console.error('❌ 登入失敗 (client.login 報錯):', err);
+});
