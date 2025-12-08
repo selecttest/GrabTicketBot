@@ -362,14 +362,21 @@ client.once('ready', async () => {
 client.on('interactionCreate', async interaction => {
     // 自動完成
     if (interaction.isAutocomplete()) {
-        const events = await getAllEvents();
-        const focused = interaction.options.getFocused().toLowerCase();
-        const filtered = events
-            .filter(e => e.toLowerCase().includes(focused))
-            .slice(0, 25)
-            .map(e => ({ name: e, value: e }));
-        
-        await interaction.respond(filtered);
+        try {
+            const events = await getAllEvents();
+            const focused = interaction.options.getFocused().toLowerCase();
+            const filtered = events
+                .filter(e => e.toLowerCase().includes(focused))
+                .slice(0, 25)
+                .map(e => ({ name: e, value: e }));
+            
+            await interaction.respond(filtered);
+        } catch (error) {
+            // 忽略自動完成的錯誤 (通常是因為輸入太快導致舊的請求被 Discord 取消，或是網路延遲)
+            if (error.code !== 10062 && error.code !== 40060) {
+                console.error('⚠️ 自動完成錯誤:', error);
+            }
+        }
         return;
     }
     
@@ -808,12 +815,26 @@ client.on('interactionCreate', async interaction => {
         }
         
     } catch (error) {
+        // 忽略 "Unknown interaction" (10062) 和 "Interaction has already been acknowledged" (40060)
+        // 這些通常是因為超時、重複回應或 Discord API 延遲造成的，不需要特別處理
+        if (error.code === 10062 || error.code === 40060) {
+            return;
+        }
+
         console.error('❌ 指令執行錯誤:', error);
         const errorMessage = '❌ 執行指令時發生錯誤，請稍後再試';
-        if (interaction.replied || interaction.deferred) {
-            await interaction.followUp({ content: errorMessage, ephemeral: true });
-        } else {
-            await interaction.reply({ content: errorMessage, ephemeral: true });
+        
+        try {
+            if (interaction.replied || interaction.deferred) {
+                await interaction.followUp({ content: errorMessage, ephemeral: true });
+            } else {
+                await interaction.reply({ content: errorMessage, ephemeral: true });
+            }
+        } catch (replyError) {
+            // 如果連錯誤訊息都發不出去 (例如互動完全失效)，就忽略它
+            if (replyError.code !== 10062 && replyError.code !== 40060) {
+                console.error('❌ 無法發送錯誤訊息:', replyError);
+            }
         }
     }
 });
