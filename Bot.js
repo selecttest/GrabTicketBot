@@ -817,7 +817,8 @@ client.on('interactionCreate', async interaction => {
     } catch (error) {
         // 忽略 "Unknown interaction" (10062) 和 "Interaction has already been acknowledged" (40060)
         // 這些通常是因為超時、重複回應或 Discord API 延遲造成的，不需要特別處理
-        if (error.code === 10062 || error.code === 40060) {
+        const errorCode = error.code || error.rawError?.code;
+        if (errorCode == 10062 || errorCode == 40060 || error.message === 'Unknown interaction' || error.message === 'Interaction has already been acknowledged') {
             return;
         }
 
