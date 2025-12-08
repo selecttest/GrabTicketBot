@@ -1,5 +1,5 @@
 require('dotenv').config();
-const { Client, GatewayIntentBits, SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, PermissionFlagsBits, AttachmentBuilder } = require('discord.js');
+const { Client, GatewayIntentBits, SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, PermissionFlagsBits, AttachmentBuilder, Events } = require('discord.js');
 const { google } = require('googleapis');
 const fs = require('fs');
 const path = require('path');
@@ -10,24 +10,11 @@ const TOKEN = process.env.DISCORD_BOT_TOKEN;
 const SPREADSHEET_ID = process.env.GOOGLE_SHEETS_ID;
 const SHEET_NAME = '記錄';
 const PORT = process.env.PORT || 10000;
-const SELF_URL = process.env.SELF_URL || 'https://grabticketbot.onrender.com';
 
 // ===== Express 伺服器 =====
 const app = express();
 app.get('/', (req, res) => res.send('GrabTicketBot is running!'));
 app.listen(PORT, () => console.log(`🌐 伺服器已啟動，運行於連接埠: ${PORT}`));
-
-// ===== Self Ping（防止 Render 休眠）=====
-const pingInterval = 5 * 60 * 1000; // 5 分鐘
-const keepAlive = async () => {
-    try {
-        const response = await fetch(SELF_URL);
-        console.log(`🔁 成功 Ping 自己的網址 ${SELF_URL}`);
-    } catch (err) {
-        console.error('⚠️ 自動 Ping 失敗:', err.message);
-    }
-};
-setInterval(keepAlive, pingInterval);
 
 // ===== 全域錯誤處理 =====
 process.on('unhandledRejection', err => {
@@ -344,7 +331,7 @@ const commands = [
 ];
 
 // Bot 事件
-client.once('ready', async () => {
+client.once(Events.ClientReady, async () => {
     console.log(`✅ Bot 已上線: ${client.user.tag}`);
     
     // 初始化 Google Sheets
@@ -919,4 +906,11 @@ client.login(TOKEN).then(() => {
     console.log('✅ client.login() Promise resolved');
 }).catch(err => {
     console.error('❌ 登入失敗 (client.login 報錯):', err);
+});
+
+// ===== 優雅關閉 (Graceful Shutdown) =====
+process.on('SIGTERM', () => {
+    console.log('🛑 收到 SIGTERM 信號，正在關閉 Bot...');
+    client.destroy();
+    process.exit(0);
 });
