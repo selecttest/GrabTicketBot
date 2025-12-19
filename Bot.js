@@ -327,7 +327,11 @@ const commands = [
     
     new SlashCommandBuilder()
         .setName('有票噴霧')
-        .setDescription('🎉 慶祝搶到票！噴出慶祝圖片')
+        .setDescription('🎉 慶祝搶到票！噴出慶祝圖片'),
+
+    new SlashCommandBuilder()
+        .setName('跳祈票舞')
+        .setDescription('💃 祈求搶到票！跳起祈票舞')
 ];
 
 // Bot 事件
@@ -775,7 +779,7 @@ client.on('interactionCreate', async interaction => {
                     },
                     {
                         name: '🎊 趣味指令',
-                        value: '`/有票噴霧` - 慶祝搶到票！',
+                        value: '`/有票噴霧` - 慶祝搶到票！\n`/跳祈票舞` - 祈求搶到票！',
                         inline: false
                     },
                     {
@@ -794,6 +798,19 @@ client.on('interactionCreate', async interaction => {
             
             if (!fs.existsSync(imagePath)) {
                 await interaction.reply({ content: '❌ 找不到圖片檔案！', ephemeral: true });
+                return;
+            }
+            
+            const attachment = new AttachmentBuilder(imagePath);
+            await interaction.reply({ files: [attachment] });
+        }
+        
+        // ===== /跳祈票舞 =====
+        else if (commandName === '跳祈票舞') {
+            const imagePath = path.join(__dirname, 'ticket_dance.gif');
+            
+            if (!fs.existsSync(imagePath)) {
+                await interaction.reply({ content: '❌ 找不到 GIF 檔案！', ephemeral: true });
                 return;
             }
             
