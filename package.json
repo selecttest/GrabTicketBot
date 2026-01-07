@@ -2,6 +2,9 @@
   "name": "ticket-tracker-bot",
   "version": "1.0.0",
   "description": "Discord 搶票記錄機器人",
+  "engines": {
+    "node": ">=16.9.0"
+  },
   "main": "Bot.js",
   "scripts": {
     "start": "node Bot.js"
