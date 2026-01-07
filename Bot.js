@@ -269,7 +269,7 @@ const commands = [
         .setDescription('記錄搶票成功')
         .addStringOption(opt => opt.setName('活動').setDescription('活動名稱').setRequired(true).setAutocomplete(true))
         .addIntegerOption(opt => opt.setName('張數').setDescription('搶到的張數').setRequired(true).setMinValue(1).setMaxValue(100))
-        .addStringOption(opt => opt.setName('日期').setDescription('活動日期 (例如: 2024-12-25)').setRequired(false))
+        .addStringOption(opt => opt.setName('日期').setDescription('活動日期 (例如: 2026/01/05)').setRequired(false))
         .addStringOption(opt => opt.setName('備註').setDescription('備註（可選）').setRequired(false)),
     
     new SlashCommandBuilder()
